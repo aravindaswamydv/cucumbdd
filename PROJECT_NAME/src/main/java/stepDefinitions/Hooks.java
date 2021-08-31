@@ -15,14 +15,15 @@ public class Hooks {
 	String screenshotImgPath;
 	JavaGeneralUtilities genUtils = new JavaGeneralUtilities();
 	String screenshotFolderPath = FileReaderManager.getInstance().getConfigReader().getScreenshotFolderPath();
+	private static boolean dunit=false;
 	public Hooks(TestContext context) {
 		testContext = context;
 
-		
 	}
+	
 	@Before		
 	public void beforeScenario(Scenario scenario) {
-		   Reporter.assignAuthor("EVRY");
+		   Reporter.assignAuthor("AuthorName");
 		
 	}
 
@@ -37,5 +38,26 @@ public class Hooks {
 		testContext.getWebDriverManager().closeDriver();
 
 	}
+	
+	@Before
+	public void beforeAll() {
+		if(!dunit) {
+			Runtime.getRuntime().addShutdownHook(new Thread(){
+				// Execute this method after all test are executed
+				public void run() {
+					System.out.println("All tests are executed");
+					// create report
+					
+					genUtils.sendEmailHtmlReport("Test report", "Hello\n this is sample report attached", "C:\\Users\\Ei01864\\git\\cucumbdd\\PROJECT_NAME\\src\\main\\resources\\TestReport\\cucumber-reports\\report.html");
+				}
+				
+			});
+			
+			//This part will be exuted before all test exution
+			System.out.println("Before all test exution");
+			dunit=true;
+		}
+	}
+	
 
 }

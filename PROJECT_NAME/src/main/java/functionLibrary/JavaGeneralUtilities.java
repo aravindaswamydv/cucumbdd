@@ -7,13 +7,34 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
+import javax.activation.DataHandler;
+import javax.activation.DataSource;
+import javax.activation.FileDataSource;
+import javax.mail.Flags;
+import javax.mail.Folder;
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.Multipart;
+import javax.mail.NoSuchProviderException;
+import javax.mail.Session;
+import javax.mail.Store;
+import javax.mail.Transport;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
+import javax.mail.search.FlagTerm;
+
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Capabilities;
@@ -236,5 +257,99 @@ public class JavaGeneralUtilities {
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
+	}
+	
+	/**
+	 * Method to fetch the OTP which is sent to email box.
+	 * @return
+	 */
+	private String getOTP() {
+		String code="";
+		String result="";
+		String user="username", pwd="password";
+		try {
+			Session session = Session.getDefaultInstance(new Properties());
+			Store store= session.getStore("imaps");
+			store.connect("outlook.office365.com",993,user,pwd);		
+			Folder inbox = store.getFolder("INBOX");
+			inbox.open(Folder.READ_ONLY);
+			// Fetch unseen messages from inbox folder
+			Message[] messages = inbox.search(new FlagTerm(new Flags(Flags.Flag.SEEN),false));
+			System.out.println("No of emails" + messages.length);
+			// sort messages from old to recent
+			Arrays.sort(messages,(m1,m2)->{
+				try {
+					return m2.getSentDate().compareTo(m2.getSentDate());
+				}catch(MessagingException e) {
+					throw new RuntimeException(e);
+				}
+			});
+			for(Message message:messages) {
+				if(message.getSubject().contains("Sandox: verfication code")) {
+					//message.getContentType();
+					result=message.getContent().toString();
+					code=StringUtils.substringBetween(result,"Verfication Code:","If u dint login to SF");
+					code=code.trim();
+					inbox.close(false);
+					store.close();
+					break;
+				}
+			}
+		}catch(NoSuchProviderException e) {
+			System.out.println("count not find Proider");
+			e.printStackTrace();
+		}catch(MessagingException me) {
+			System.out.println("count not connect to message store");
+			me.printStackTrace();
+		}catch(IOException ie) {
+			ie.printStackTrace();
+		}
+		
+		return code;
+	}
+	
+	
+	public void sendEmailHtmlReport(String subject, String emailbodyTxt, String reportFilePath) {
+
+		String toEmail = "aravindaswamy.doddamane@tietoevry.com";
+		String from = "fromName";
+		String host = "mail.companyname.com"; // e.g:  mail.spanservices.com
+		String fileName = "";
+		Properties properties = System.getProperties();
+		properties.setProperty("mail.smtp.host", host);
+		properties.setProperty("mail.smtp.port", "25");
+		Session session = Session.getDefaultInstance(properties);
+		try {
+			MimeMessage message = new MimeMessage(session);
+			message.setFrom(new InternetAddress(from));
+			message.addRecipients(Message.RecipientType.TO, InternetAddress.parse(toEmail));
+			message.setSubject(subject);
+
+			// create message part
+			MimeBodyPart msgBodyPart = new MimeBodyPart();
+			msgBodyPart.setContent(emailbodyTxt, "text/html");
+
+			// create Multi part
+			Multipart multiPart = new MimeMultipart();
+			multiPart.addBodyPart(msgBodyPart);
+
+			// attaching html
+			msgBodyPart = new MimeBodyPart();
+			fileName = reportFilePath;
+
+			DataSource dataSource = new FileDataSource(fileName);
+			msgBodyPart.setDataHandler(new DataHandler(dataSource));
+			msgBodyPart.setFileName(new File(fileName).getName());
+			multiPart.addBodyPart(msgBodyPart);
+			message.setContent(multiPart);
+
+			// send Msg
+			Transport.send(message);
+			System.out.println("Message sent successfully");
+
+		} catch (MessagingException me) {
+			me.printStackTrace();
+		}
+
 	}
 }

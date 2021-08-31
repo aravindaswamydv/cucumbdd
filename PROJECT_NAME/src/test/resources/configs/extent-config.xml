@@ -11,10 +11,10 @@
     <protocol>https</protocol>
     
     <!-- title of the document -->
-    <documentTitle>EVRY - Cucumber Framework</documentTitle>
+    <documentTitle>TEST - Cucumber Framework</documentTitle>
     
     <!-- report name - displayed at top-nav -->
-    <reportName>EVRY - Cucumber Report</reportName>
+    <reportName>TEST - Cucumber Report</reportName>
     
     <!-- global date format override -->  <!-- defaults to yyyy-MM-dd -->
     <dateFormat>yyyy-MM-dd</dateFormat>

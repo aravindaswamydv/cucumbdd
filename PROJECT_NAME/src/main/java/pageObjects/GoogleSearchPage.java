@@ -27,7 +27,7 @@ public class GoogleSearchPage extends SeleniumGenericFunctionsWeb {
 
 	}
 
-	@FindBy(how = How.XPATH, using = "//*[@id=\"tsf\"]/div[2]/div[1]/div[1]/div/div[2]/input")
+	@FindBy(how = How.XPATH, using = "//input[@name='q']")
 	private WebElement searchInputField;
 
 	@FindBy(how = How.XPATH, using = "//input[@name='btnK']")
