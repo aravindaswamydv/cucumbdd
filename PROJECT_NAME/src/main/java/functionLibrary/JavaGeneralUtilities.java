@@ -5,6 +5,11 @@ import java.awt.Robot;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
@@ -54,6 +59,10 @@ import com.cucumber.listener.Reporter;
 
 
 public class JavaGeneralUtilities {
+	Connection connection=null;
+	Statement stmt=null;
+	ResultSet rs=null;
+	public static final String DEFULT_DRIVER_CLASS="com.microsoft.sqlserver.jdbc.SQLServerDriver";
 	
 	/**
 	 * Method name : isFileExist
@@ -351,5 +360,81 @@ public class JavaGeneralUtilities {
 			me.printStackTrace();
 		}
 
+	}
+	
+	public void OpenConnection() throws SQLException, ClassNotFoundException {
+		try {
+		connection=this.getConnection(DEFULT_DRIVER_CLASS,"jdbc.sqlserver://XYZABCM01:integratedSecurity=true");
+		System.out.println("Connection Success");
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
+		
+	}
+	
+	public void closeConnection() {
+		try {
+			connection.close();			
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public static Connection getConnection(String driverClass,String url) throws ClassNotFoundException, SQLException {
+		Class.forName(driverClass);
+		return DriverManager.getConnection(url);
+				
+	}
+	
+	public String execute_Query(String sql, String columnName) {
+		String value="";
+		try {
+			OpenConnection();
+			if (connection != null) {
+				stmt = connection.createStatement();
+				rs = stmt.executeQuery(sql);
+				while(rs.next()) {
+					value=rs.getString(columnName);	
+				System.out.println(value);
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		closeConnection();
+		return value;
+	}
+	
+	
+	public ResultSet execute_Query(String sql) {
+		try {
+			OpenConnection();
+			if (connection != null) {
+				stmt = connection.createStatement();
+				rs = stmt.executeQuery(sql);
+				
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		closeConnection();
+		return rs;
+	}
+	
+	public int updateQuery(String sql) {
+		int val=0;
+		try {
+			OpenConnection();
+			if (connection != null) {
+				stmt = connection.createStatement();
+				val=stmt.executeUpdate(sql);
+			}
+			
+			
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
+		closeConnection();
+		return val;
 	}
 }
