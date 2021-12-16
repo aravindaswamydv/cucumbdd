@@ -5,6 +5,9 @@ import java.awt.Robot;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -322,7 +325,7 @@ public class JavaGeneralUtilities {
 
 		String toEmail = "aravindaswamy.doddamane@tietoevry.com";
 		String from = "fromName";
-		String host = "mail.companyname.com"; // e.g:  mail.spanservices.com
+		String host = " mail.evry.com";//"mail.companyname.com"; // e.g:  mail.spanservices.com
 		String fileName = "";
 		Properties properties = System.getProperties();
 		properties.setProperty("mail.smtp.host", host);
@@ -436,5 +439,67 @@ public class JavaGeneralUtilities {
 		}
 		closeConnection();
 		return val;
+	}
+	
+	/**
+	 * Method name : getScreenshot
+	 * Purpose     : Method capture the screenshot and save to provided location and return the path of the screenshot
+	 * @param      : screenshotFolderPath - location of screenshot to be saved
+	 *               fileName - name to be given to screenshot
+	 * @return     : screenImg  - location of screen Image that is Saved
+	 * @author     : EVRY
+	 */
+	public String getScreenshot1(WebDriver webDriver, String screenshotFolderPath, String fileName) {
+		String screenImg = null;
+
+		screenImg = screenshotFolderPath + fileName + ".png";
+		// Take screenshot and store as a file format
+		File src = ((TakesScreenshot) webDriver).getScreenshotAs(OutputType.FILE);
+		try {
+			// now copy the screenshot to desired location using copyFile
+			FileUtils.copyFile(src, new File(screenImg));
+		} catch (IOException e) {
+			System.out.println(e.getMessage());
+		} catch(Exception e){
+			System.out.println(e.getMessage());
+		}
+		return screenImg;
+	}
+	
+	/**
+	 * create a folder at specified location
+	 * @param location
+	 */
+
+	public void createFolder(String location) {
+		
+		try {
+			Files.createDirectories(Paths.get(location));
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	
+	/**
+	 * method to move a file to specified location
+	 * @param src
+	 * @param dest
+	 */
+
+	public void moveAndRenameFile(String src, String dest) {
+		Path result=null;
+		try {
+			result=Files.move(Paths.get(src), Paths.get(dest));
+			
+		}catch(Exception e) {
+			System.out.println("Exception while moving a file : " + e.getMessage());
+			e.printStackTrace();
+		}
+		if(result!=null) {
+			System.out.println("File moved sucessfully");
+		}else{
+			System.out.println("File move failed");
+		}
 	}
 }
